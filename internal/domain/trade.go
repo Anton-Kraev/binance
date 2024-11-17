@@ -11,6 +11,7 @@ import (
 type Trade struct {
 	Time     int64
 	Quantity float64
+	IsMaker  bool
 }
 
 func FromBinanceTrade(trade *binance.Trade) Trade {
@@ -47,16 +48,26 @@ func FromBinanceTradeEvent(event *binance.WsTradeEvent) Trade {
 	return Trade{
 		Time:     event.TradeTime,
 		Quantity: price * qty,
+		IsMaker:  event.IsBuyerMaker,
 	}
 }
 
 func TradeFields() string {
-	return "Time,Quantity"
+	return "Time,MarketMaker,Quantity"
 }
 
 func (t Trade) String() string {
-	return fmt.Sprintf("%s,%.0f",
+	convBool := func(flag bool) string {
+		if flag {
+			return "1"
+		}
+
+		return "0"
+	}
+
+	return fmt.Sprintf("%s,%s,%.0f",
 		time.UnixMilli(t.Time).Format("02.01.2006-15:04:05"),
+		convBool(t.IsMaker),
 		t.Quantity,
 	)
 }
@@ -69,6 +80,7 @@ func (t Trade) Merge(nextTrade Trade) Trade {
 	return Trade{
 		Time:     t.Time,
 		Quantity: t.Quantity + nextTrade.Quantity,
+		IsMaker:  t.IsMaker,
 	}
 }
 
