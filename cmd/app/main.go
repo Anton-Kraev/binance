@@ -14,7 +14,7 @@ import (
 
 var (
 	symbol       = "BTCUSDT"
-	qtyThreshold = 10000.
+	qtyThreshold = 100000.
 )
 
 func main() {

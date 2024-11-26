@@ -29,8 +29,8 @@ func NewTradesService(client *binance.Client, trades tradeStream, config domain.
 func (c *TradesService) StartReceiving() (done <-chan struct{}, err error) {
 	var prevTrade domain.Trade
 
-	wsTradeHandler := func(event *binance.WsTradeEvent) {
-		currTrade := domain.FromBinanceTradeEvent(event)
+	wsTradeHandler := func(event *binance.WsAggTradeEvent) {
+		currTrade := domain.FromBinanceAggTradeEvent(event)
 
 		if prevTrade.IsSameTrade(currTrade) {
 			prevTrade = prevTrade.Merge(currTrade)
@@ -49,7 +49,7 @@ func (c *TradesService) StartReceiving() (done <-chan struct{}, err error) {
 		log.Println(err)
 	}
 
-	done, _, err = binance.WsTradeServe(c.config.Symbol, wsTradeHandler, errHandler)
+	done, _, err = binance.WsAggTradeServe(c.config.Symbol, wsTradeHandler, errHandler)
 
 	return
 }

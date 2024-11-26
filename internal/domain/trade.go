@@ -57,6 +57,33 @@ func FromBinanceTradeEvent(event *binance.WsTradeEvent) Trade {
 	}
 }
 
+func FromBinanceAggTradeEvent(event *binance.WsAggTradeEvent) Trade {
+	if event == nil {
+		return Trade{}
+	}
+
+	qty, err := strconv.ParseFloat(event.Quantity, 64)
+	if err != nil {
+		qty = 0
+	}
+
+	price, err := strconv.ParseFloat(event.Price, 64)
+	if err != nil {
+		price = 0
+	}
+
+	if qty == 0 || price == 0 {
+		fmt.Println(event)
+	}
+
+	return Trade{
+		IsBuyerMaker: event.IsBuyerMaker,
+		Time:         event.TradeTime,
+		Quantity:     price * qty,
+		Price:        price,
+	}
+}
+
 func TradeFields() string {
 	return "Trend,Time,Quantity,Price"
 }
