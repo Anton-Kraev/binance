@@ -32,7 +32,7 @@ func (c *TradesService) StartReceiving() (done <-chan struct{}, err error) {
 	wsTradeHandler := func(event *binance.WsAggTradeEvent) {
 		currTrade := domain.FromBinanceAggTradeEvent(event)
 
-		if prevTrade.IsSameTrade(currTrade) {
+		if prevTrade.IsSameTrade(currTrade) && c.config.Merge {
 			prevTrade = prevTrade.Merge(currTrade)
 
 			return

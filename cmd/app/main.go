@@ -15,12 +15,13 @@ import (
 var (
 	symbol       = "BTCUSDT"
 	qtyThreshold = 100000.
+	merge        = false
 )
 
 func main() {
 	binanceClient := binance.NewClient("", "")
 	tradeStream := domain.NewTradeStream()
-	tradeConfig := domain.NewTradeConfig(symbol, qtyThreshold)
+	tradeConfig := domain.NewTradeConfig(symbol, qtyThreshold, merge)
 
 	tradeService := market.NewTradesService(binanceClient, tradeStream, tradeConfig)
 
