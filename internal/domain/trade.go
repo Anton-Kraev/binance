@@ -99,7 +99,7 @@ func (t Trade) String() string {
 }
 
 func (t Trade) IsSameTrade(nextTrade Trade) bool {
-	return t.Time == nextTrade.Time && t.IsBuyerMaker == nextTrade.IsBuyerMaker
+	return nextTrade.Time-t.Time < 1000 && t.IsBuyerMaker == nextTrade.IsBuyerMaker
 }
 
 func (t Trade) Merge(nextTrade Trade) Trade {

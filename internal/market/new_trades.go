@@ -27,22 +27,31 @@ func NewTradesService(client *binance.Client, trades tradeStream, config domain.
 }
 
 func (c *TradesService) StartReceiving() (done <-chan struct{}, err error) {
-	var prevTrade domain.Trade
+	var tradeBuffer []domain.Trade
 
 	wsTradeHandler := func(event *binance.WsAggTradeEvent) {
 		currTrade := domain.FromBinanceAggTradeEvent(event)
 
-		if prevTrade.IsSameTrade(currTrade) && c.config.Merge {
-			prevTrade = prevTrade.Merge(currTrade)
+		if tradeBuffer == nil || tradeBuffer[0].IsSameTrade(currTrade) && c.config.Merge {
+			tradeBuffer = append(tradeBuffer, currTrade)
 
 			return
 		}
 
-		if prevTrade.MatchesFilter(c.config.QtyThreshold) {
-			c.trades.Add(prevTrade)
+		mergedTrade := tradeBuffer[0]
+
+		for _, trade := range tradeBuffer[1:] {
+			mergedTrade = mergedTrade.Merge(trade)
 		}
 
-		prevTrade = currTrade
+		tradeBuffer = nil
+		if !c.config.Merge {
+			tradeBuffer = append(tradeBuffer, currTrade)
+		}
+
+		if mergedTrade.MatchesFilter(c.config.QtyThreshold) {
+			c.trades.Add(mergedTrade)
+		}
 	}
 
 	errHandler := func(err error) {
